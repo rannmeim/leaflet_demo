@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leafleg.draw Demo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+          integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+          crossorigin=""/>
+    <style>
+        #map {
+            height: 900px;
+            /* border: 1px solid pink; */
+        }
+    </style>
+    <link href="https://cdn.bootcss.com/leaflet.draw/1.0.4/leaflet.draw.css" rel="stylesheet">
+</head>
+<body>
+<div id="map"></div>
+</body>
+<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+        integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+        crossorigin=""></script>
+<script src="https://cdn.bootcss.com/leaflet.draw/1.0.4/leaflet.draw.js"></script> 
+<script>
+    // （获取图片宽高）
+    const imgObj = new Image();
+    imgObj.src = 'kuroko.jpg';
+    var imgObjW = 0;
+    var imgObjH = 0;
+    imgObj.onload = function(){
+        console.log('origin width: '+ imgObj.width);
+        console.log('origin height: '+ imgObj.height);
+        imgObjW = imgObj.width;
+        imgObjH = imgObj.height;
+    };
+
+    // 图片的左上、右下两点
+    const start = [51.605, -0.24];
+    const end = [51.505, -0.09];
+
+    // 加载图片
+    var map = L.map('map', {drawControl: true}).setView(start, 11);
+    var imageUrl = 'kuroko.jpg',
+        imageBounds = [start, end];
+    var bg_img = L.imageOverlay(imageUrl, imageBounds).addTo(map);
+    var marker = L.marker(start).addTo(map);
+    
+    var editableLayers = new L.FeatureGroup();
+    map.addLayer(editableLayers);
+    
+    var MyCustomMarker = L.Icon.extend({
+        options: {
+            shadowUrl: null,
+            iconAnchor: new L.Point(12, 12),
+            iconSize: new L.Point(24, 24),
+            iconUrl: 'link/to/image.png'
+        }
+    });
+    
+    var options = {
+        // 工具栏位置
+        position: 'topright',
+        // 绘制
+        draw: {
+            polyline: {
+                shapeOptions: {
+                    color: '#f357a1',
+                    weight: 10
+                }
+            },
+            polygon: {
+                allowIntersection: false, // Restricts shapes to simple polygons
+                drawError: {
+                    color: '#e1e100', // Color the shape will turn when intersects
+                    message: '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
+                },
+                shapeOptions: {
+                    color: '#bada55'
+                }
+            },
+            // 关闭画圆的功能
+            circle: false, 
+            rectangle: {
+                shapeOptions: {
+                    clickable: false
+                }
+            },
+            marker: {
+                icon: new MyCustomMarker()
+            }
+        },
+        // 编辑
+        edit: {
+            featureGroup: editableLayers, //REQUIRED!!
+        },
+    };
+    
+    var drawControl = new L.Control.Draw(options);
+    map.addControl(drawControl);
+    
+    map.on(L.Draw.Event.CREATED, function (e) {
+        var type = e.layerType,
+            layer = e.layer;
+    
+        if (type === 'marker') {
+            layer.bindPopup('A popup!');
+        }
+    
+        editableLayers.addLayer(layer);
+    });
+
+
+
+    function onClick(e) {
+        // origin pixel: top left point of the map layer
+        // relative to origin pixel
+        // latLngToLayerPoint
+        // latLngToContainerPoint
+        // mouseEventToLayerPoint
+        var startPoint = map.latLngToLayerPoint(start);
+        var endPoint = map.latLngToLayerPoint(end);
+        var clickPoint = map.latLngToLayerPoint([e.latlng.lat, e.latlng.lng]);
+        // console.log('X: ' + Math.round(relaX)) 
+        var relaY = (clickPoint.y - startPoint.y)/(endPoint.y - startPoint.y)*imgObjH;
+        console.log('Y: ' + Math.round(relaY)) 
+    }
+    map.on('click', onClick);
+    
+    // change the colour of the rectangle
+    // drawControl.setDrawingOptions({
+    //     rectangle: {
+    //         shapeOptions: {
+    //             color: '#0000FF'
+    //         }
+    //     }
+    // });
+</script>
+</html>

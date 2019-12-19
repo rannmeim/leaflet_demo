@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>demo</title>
+    <title>simple</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
           integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
           crossorigin=""/>
@@ -10,6 +10,10 @@
         #map {
             height: 500px;
             /* border: 1px solid pink; */
+        }
+
+        .leaflet-touch .leaflet-control-attribution{
+            display: none !important; 
         }
     </style>
 </head>
@@ -51,71 +55,66 @@
 
 
 
-    // var map = L.map('map', {
-    //     crs: L.CRS.Simple,
-    //     minZoom: -5
-    // });
-    // var bounds = [[0,0], [100,100]];
-    // var image = L.imageOverlay('kuroko.jpg', bounds).addTo(map);
-    // map.fitBounds(bounds);
-    // var points = []
-    // var lines = new L.polyline([])
-    // var tempLines = new L.polyline([], {dashArray: 5})
+    var map = L.map('map', {
+        crs: L.CRS.Simple,
+        minZoom: -5
+    });
+    var bounds = [[0,0], [100,100]];
+    var image = L.imageOverlay('sky.jpg', bounds).addTo(map);
+    map.fitBounds(bounds);
+    var points = []
+    var lines = new L.polyline([])
+    var tempLines = new L.polyline([], {dashArray: 5})
     // map.on('click', onClick);    //点击地图
     // map.on('dblclick', onDoubleClick);
     // map.on('mousemove', onMove)//双击地图
 
+    let polygon = L.polygon([[70.75, 53],[33.75, 18.75],[29.75, 78.5],[29.75, 78.5]], {interactive: true}).addTo(map)
+    console.log(polygon)
 
-    var polygons = [];
-
-    var map = L.map('map').setView([51.605, -0.24], 11);
-    // console.log(map.project([51.605, -0.24]))
-    console.log(map)
-    var points = []
-    var circles = []
-    var lines = new L.polyline([])
-    var tempLines = new L.polyline([], {dashArray: 5})
-    var imageUrl = 'sky.jpg',
-        imageBounds = [[51.605, -0.24], [51.505, -0.00]];
-    var bg_img = L.imageOverlay(imageUrl, imageBounds).addTo(map);
+    polygon.on('click', function(map){
+        console.log('polygon click');
+        console.log(map);
+        // stop propagation
+        // e.preventDefault();
+        map.originalEvent.stopPropagation();
+        return false
+    })
+    // var map = L.map('map').setView([51.605, -0.24], 11);
+    // var points = []
+    // var lines = new L.polyline([])
+    // var tempLines = new L.polyline([], {dashArray: 5})
+    // var imageUrl = 'kuroko.jpg',
+    //     imageBounds = [[51.605, -0.24], [51.505, -0.09]];
+    // var bg_img = L.imageOverlay(imageUrl, imageBounds).addTo(map);
             // var marker = L.marker([51.505, -0.09]).addTo(map);
             // var marker = L.marker([51.605, -0.19]).addTo(map);
             // var marker = L.marker([51.605, -0.09]).addTo(map);
     map.on('click', onClick);    //点击地图
-    map.on('dblclick', onDoubleClick);
-    map.on('keydown', onKeyDown);
-    map.on('mousemove', onMove)//双击地图
+    // map.on('dblclick', onDoubleClick);
+    // map.on('mousemove', onMove)//双击地图
 
             //map.off(....) 关闭该事件
 
     function onClick(e) {
         console.log('map click')
-        // console.log(e)
-        // console.log(e.target.attributionControl._container)
-        // console.log(typeof e.target.attributionControl._container)
-
-        // console.log(e)
+        console.log(e)
         // console.log(e)
         // console.log(map.latLngToLayerPoint([51.605, -0.24]))
 
         // console.log(map.latLngToContainerPoint([e.latlng.lat, e.latlng.lng]))
+
         // console.log(map.latLngToContainerPoint([51.605, -0.24]))
         // console.log(map.layerPointToContainerPoint(map.latLngToContainerPoint([51.605, -0.24])))
+
         // console.log(map.latLngToContainerPoint([51.505, -0.09]))
         // console.log(bg_img.getBounds())
         // console.log(map.project([e.latlng.lat, e.latlng.lng],1))
         points.push([e.latlng.lat, e.latlng.lng])
         lines.addLatLng(e.latlng)
-        // console.log(tempLines.toGeoJSON(2))
         map.addLayer(tempLines)
-        // lines.remove();
         map.addLayer(lines)
-        console.log(e.latlng)
-        let cir = L.circle(e.latlng, {color: '#ff0000', fillColor: 'ff0000', fillOpacity: 1})
-        circles.push(cir);
-        map.addLayer(cir)
-        // map.addLayer(L.circleMarker(e.latlng, {color: '#ff0000', fillColor: 'ff0000', fillOpacity: 1}))
-
+        map.addLayer(L.circleMarker(e.latlng, {color: '#ff0000', fillColor: 'cccccc', fillOpacity: 1, radius: 2}))
     }
 
     function onMove(e) {
@@ -126,36 +125,18 @@
         }
     }
 
-    function onKeyDown(e) {
-        console.log('onKeyDown')
-        console.log(e)
-    }
-
     function onDoubleClick(e) {
-        console.log(points.length)
-        if (points.length < 4) {
-            return
-        }
-        console.log('map double click')
-        // console.log(bg_img.getBounds())
-        let polygon = L.polygon(points, {id: 1001, interactive: true,bubblingMouseEvents: false}).addTo(map);
-        // console.log('polygon')
-        // console.log(polygon)
-        // var marker = L.marker([bg_img.getBounds()._northEast.lat, bg_img.getBounds()._northEast.lng]).addTo(map);
-        // var marker = L.marker([bg_img.getBounds()._southWest.lat, bg_img.getBounds()._southWest.lng]).addTo(map);
-        polygon.on('click', function(e){
+        console.log(points)
+        let polygon = L.polygon(points, {interactive: true}).addTo(map)
+
+        polygon.on('click', function(map){
             console.log('polygon click');
-            console.log(e);
-            console.log(this);
-            console.log(e.target);
-            this.remove()
-            console.log('circles')
-            console.log(circles)
-            for(let i in circles){
-                circles[i].remove()
-            }
+            // console.log(map);
+            // stop propagation
+            // e.preventDefault();
+            map.originalEvent.stopPropagation();
+            return false
         })
-        polygons.push(polygon);
 
         points = []
         //map.removeLayer(tempLines)
